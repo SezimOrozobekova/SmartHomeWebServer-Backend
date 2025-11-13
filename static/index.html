@@ -1,0 +1,57 @@
+<html>
+<body style="text-align:center; font-family:sans-serif;">
+
+<h1>Smart Home Control Panel</h1>
+
+<div style="display:flex; justify-content:center; gap:50px; margin-top:40px;">
+
+
+    <div>
+        <div id="lamp" style="width:80px;height:80px;border-radius:50%;background:gray;margin:auto;"></div>
+        <h3 id="lampStatus">Lamp: OFF</h3>
+        <button onclick="toggle('light')" style="font-size:18px;">Toggle Lamp</button>
+    </div>
+
+
+    <div>
+        <div id="kettle" style="width:80px;height:80px;border-radius:10px;background:gray;margin:auto;"></div>
+        <h3 id="kettleStatus">Kettle: OFF</h3>
+        <button onclick="toggle('kettle')" style="font-size:18px;">Toggle Kettle</button>
+    </div>
+
+
+    <div>
+        <div id="fridge" style="width:80px;height:120px;border-radius:10px;background:gray;margin:auto;"></div>
+        <h3 id="fridgeStatus">Fridge: OFF</h3>
+        <button onclick="toggle('fridge')" style="font-size:18px;">Toggle Fridge</button>
+    </div>
+
+</div>
+
+<script>
+function loadState() {
+    fetch("/state")
+        .then(r => r.json())
+        .then(s => {
+
+            document.getElementById("lamp").style.background = s.light.on ? "yellow" : "gray";
+            document.getElementById("lampStatus").innerHTML = "Lamp: " + (s.light.on ? "ON 💡" : "OFF ⚫");
+
+            document.getElementById("kettle").style.background = s.kettle.on ? "orange" : "gray";
+            document.getElementById("kettleStatus").innerHTML = "Kettle: " + (s.kettle.on ? "ON 🔥" : "OFF ⚫");
+
+            document.getElementById("fridge").style.background = s.fridge.on ? "lightblue" : "gray";
+            document.getElementById("fridgeStatus").innerHTML = "Fridge: " + (s.fridge.on ? "ON ❄️" : "OFF ⚫");
+        });
+}
+
+function toggle(device) {
+    fetch("/toggle/" + device)
+        .then(() => loadState());
+}
+
+loadState();
+</script>
+
+</body>
+</html>
