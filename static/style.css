@@ -1,0 +1,53 @@
+body {
+    font-family: sans-serif;
+    background: #f8f8f8;
+}
+
+.room {
+    position: relative;
+    width: 800px;     /* подстрой под свою картинку */
+    height: 600px;    /* подстрой под свою картинку */
+    margin: 30px auto;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.lamp {
+    position: absolute;
+    top: 40px;     /* ПОМЕНИТЬ */
+    left: 350px;   /* ПОМЕНИТЬ */
+    width: 80px;
+}
+
+.kettle {
+    position: absolute;
+    top: 350px;    /* ПОМЕНИТЬ */
+    left: 420px;   /* ПОМЕНИТЬ */
+    width: 100px;
+}
+
+.fridge {
+    position: absolute;
+    top: 150px;    /* ПОМЕНИТЬ */
+    left: 50px;    /* ПОМЕНИТЬ */
+    width: 160px;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+button {
+    font-size: 20px;
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+}
