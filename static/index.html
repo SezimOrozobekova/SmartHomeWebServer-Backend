@@ -30,7 +30,6 @@
           margin-top: 20px;
         }
 
-
         .room {
           position: relative;
           width: 90%;
@@ -46,135 +45,192 @@
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: opacity 0.5s ease;
         }
-
-
 
         .device {
           position: absolute;
-          transition: opacity 0.3s ease, transform 0.3s;
+          transition: 0.3s ease;
         }
 
+        .lamp { top: 0.3%; left: 38%; width: 13%; }
+        .kettle { top: 36%; left: 69%; width: 15%; }
+        .fridge { top: 35%; left: 3%; width: 27%; }
 
-        .lamp {
-          top: 0.8%;
-          left: 38%;
-          width: 13%;
-        }
-
-
-        .kettle {
-          top: 36%;
-          left: 69%;
-          width: 15%;
-        }
-
-
-        .fridge {
-          top: 35%;
-          left: 3%;
-          width: 27%;
-        }
-
-
+        /* --- CONTROL PANEL --- */
         .controls {
-          width: 230px;
+          width: 300px;
           background: #3a3f50;
           border-radius: 12px;
           padding: 20px;
-          height: fit-content;
           box-shadow: 0 0 15px #0005;
         }
 
-        .control-title {
-          color: #fff;
-          font-size: 22px;
-          margin-bottom: 15px;
+        .section {
+          background: #464b5c;
+          padding: 15px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+
+        .section-title {
+          color: #FFEAA7;
+          font-size: 20px;
+          margin-bottom: 10px;
         }
 
         button {
-          font-size: 18px;
-          margin: 12px 0;
-          padding: 12px 20px;
+          font-size: 16px;
+          padding: 10px;
           width: 100%;
           background: #FFEAA7;
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          transition: 0.2s ease;
+          margin-top: 10px;
         }
 
         button:hover {
           background: #ffdb6b;
-          transform: scale(1.04);
         }
 
-        @media (max-width: 600px) {
-          h1 {
-              font-size: 2rem;
-          }
+        /* --- COLOR CIRCLES --- */
+        .color-picker {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 10px;
+        }
 
+        .color-circle {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          border: 2px solid #fff;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+
+        .color-circle:hover {
+          transform: scale(1.15);
+        }
+
+        .color-white { background: white; }
+        .color-red   { background: red; }
+        .color-green { background: green; }
+        .color-blue  { background: blue; }
+
+        .temp-control {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          margin-top: 10px;
+        }
+
+        .temp-btn {
+          width: 40px;
+          height: 40px;
+          background: #FFEAA7;
+          font-size: 22px;
+          border-radius: 6px;
+        }
+
+        .temp-display {
+          color: #fff;
+          font-size: 20px;
+        }
+
+        @media (max-width: 700px) {
           .controls {
-              width: 90%;
-              margin-top: 10px;
+            width: 90%;
           }
-
-          button {
-              font-size: 16px;
-              padding: 10px;
-          }
+          h1 { font-size: 2rem; }
         }
 
     </style>
-
 </head>
 <body>
 
 <h1>Smart Home Control Panel</h1>
+
 <div class="layout">
+
     <div class="room">
         <img class="background" src="/static/room.png">
-
         <img id="lamp" class="lamp device" src="/static/lamp_off.png">
         <img id="kettle" class="kettle device" src="/static/kettle_off.png">
         <img id="fridge" class="fridge device" src="/static/fridge_off.png">
     </div>
 
-
     <div class="controls">
-        <div class="control-title">Controls</div>
-        <button onclick="toggle('light')">Toggle Lamp</button>
-        <button onclick="toggle('kettle')">Toggle Kettle</button>
-        <button onclick="toggle('fridge')">Toggle Fridge</button>
-    </div>
 
+        <!-- LAMP -->
+        <div class="section">
+            <div class="section-title">Lamp</div>
+            <button onclick="toggle('light')">Toggle Lamp</button>
+
+            <div class="color-picker">
+                <div class="color-circle color-white" onclick="setColor('white')"></div>
+                <div class="color-circle color-red"   onclick="setColor('red')"></div>
+                <div class="color-circle color-green" onclick="setColor('green')"></div>
+                <div class="color-circle color-blue"  onclick="setColor('blue')"></div>
+            </div>
+
+            <div class="temp-display">Color: <span id="lampColor">white</span></div>
+        </div>
+
+        <!-- FRIDGE -->
+        <div class="section">
+            <div class="section-title">Fridge</div>
+
+            <div class="temp-control">
+                <button class="temp-btn" onclick="changeTemp('down')">−</button>
+                <div class="temp-display"><span id="fridgeTemp">0</span>°C</div>
+                <button class="temp-btn" onclick="changeTemp('up')">+</button>
+            </div>
+
+            <button onclick="toggle('fridge')">Toggle Fridge</button>
+        </div>
+
+        <!-- KETTLE -->
+        <div class="section">
+            <div class="section-title">Kettle</div>
+            <button onclick="toggle('kettle')">Toggle Kettle</button>
+        </div>
+
+    </div>
 </div>
 
 <script>
+
 function loadState() {
     fetch("/state")
         .then(r => r.json())
         .then(data => {
+
             document.getElementById("lamp").src =
-                data.light.on ? "/static/lamp_on.png" : "/static/lamp_off.png";
+                  data.light.on ? "/static/lamp_" + data.light.color + ".png"
+                              : "/static/lamp_off.png";
 
             document.querySelector(".background").src =
-                data.light.on ? "/static/room.png" : "/static/room_off.png";
+                  data.light.on ? "/static/room_" + data.light.color + ".png"
+                               : "/static/room_off.png";
 
             document.getElementById("kettle").src =
                 data.kettle.on ? "/static/kettle_on.png" : "/static/kettle_off.png";
 
             document.getElementById("fridge").src =
                 data.fridge.on ? "/static/fridge_on.png" : "/static/fridge_off.png";
+
+            document.getElementById("lampColor").innerText = data.light.color;
+            document.getElementById("fridgeTemp").innerText = data.fridge.temperature;
         });
 }
 
 function toggle(device) {
     if (device === "light") playSound("/static/sound_lamp.mp3");
     if (device === "kettle") playSound("/static/sound_kettle.mp3");
-    if (device === "fridge") playSound("/static/sound_fridge.mp3");
-    fetch("/toggle/" + device)
+    if (device === "fridge") playSound("/static/sound_fridge.mp3"); fetch("/toggle/" + device)
         .then(() => loadState());
 }
 
@@ -182,8 +238,17 @@ function playSound(path) {
     new Audio(path).play();
 }
 
+function setColor(color) {
+    playSound("/static/sound_lamp.mp3");
+    fetch("/light/color/" + color).then(loadState);
+}
+
+function changeTemp(mode) {
+    fetch("/fridge/temp/" + mode).then(loadState);
+}
 
 loadState();
+
 </script>
 
 </body>

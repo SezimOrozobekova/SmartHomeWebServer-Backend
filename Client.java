@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
 import java.net.Socket;
+
 import com.google.gson.Gson;
+import java.util.Map;
 
 public class Client implements Runnable {
 
@@ -31,6 +32,7 @@ public class Client implements Runnable {
         handleRequest();
     }
 
+
     private void handleRequest() {
         try {
             BufferedReader reader = new BufferedReader(
@@ -47,14 +49,26 @@ public class Client implements Runnable {
             if (path.startsWith("/toggle/")) {
                 handleToggle(path, out);
                 return;
-            }
 
-            if (path.equals("/state")) {
+            } else if (path.startsWith("/light/color/")) {
+                handleLightColor(path, out);
+                return;
+
+            } else if (path.equals("/fridge/temp/up")) {
+                state.fridge.increaseTemperature();
+                sendJson(out, ok());
+                return;
+
+            } else if (path.equals("/fridge/temp/down")) {
+                state.fridge.decreaseTemperature();
+                sendJson(out, ok());
+                return;
+
+            } else if (path.equals("/state")) {
                 sendJson(out, gson.toJson(state));
                 return;
-            }
 
-            if (path.startsWith("/static/")) {
+            } else if (path.startsWith("/static/")) {
                 File file = new File("." + path);
 
                 if (!file.exists()) {
@@ -72,11 +86,11 @@ public class Client implements Runnable {
         } catch (IOException e) {
             System.out.println("Client error: " + e);
         } finally {
-            try {
-                socket.close();
-            } catch (IOException ignored) {}
+            try { socket.close(); } catch (IOException ignored) {}
         }
     }
+
+
 
     private void handleToggle(String path, OutputStream out) throws IOException {
         switch (path) {
@@ -98,7 +112,30 @@ public class Client implements Runnable {
                 return;
         }
 
-        sendJson(out, gson.toJson(Map.of("ok", true)));
+        sendJson(out, ok());
+    }
+
+    private void handleLightColor(String path, OutputStream out) throws IOException {
+
+        String[] parts = path.split("/");
+        if (parts.length < 4) {
+            send404(out);
+            return;
+        }
+
+        String color = parts[3];
+        try {
+            state.light.setColor(color);
+            sendJson(out, ok());
+        } catch (IllegalArgumentException e) {
+            send404(out);
+        }
+
+    }
+
+
+    private String ok() {
+        return gson.toJson(Map.of("ok", true));
     }
 
     private void sendJson(OutputStream out, String json) throws IOException {
@@ -138,14 +175,13 @@ public class Client implements Runnable {
         writer.println("404 Not Found");
     }
 
-
     private String getMimeType(String filename) {
         if (filename.endsWith(".html")) return "text/html; charset=UTF-8";
-        if (filename.endsWith(".css"))  return "text/css";
-        if (filename.endsWith(".js"))   return "application/javascript";
-        if (filename.endsWith(".png"))  return "image/png";
+        if (filename.endsWith(".css")) return "text/css";
+        if (filename.endsWith(".js")) return "application/javascript";
+        if (filename.endsWith(".png")) return "image/png";
         if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return "image/jpeg";
-        if (filename.endsWith(".mp3"))  return "audio/mpeg";
+        if (filename.endsWith(".mp3")) return "audio/mpeg";
         return "application/octet-stream";
     }
 }
