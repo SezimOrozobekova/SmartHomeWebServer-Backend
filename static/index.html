@@ -7,100 +7,143 @@
     <style>
 
         body {
-            font-family: sans-serif;
-            background: #313647;
-            margin: 0;
-            padding: 0;
+          font-family: "Segoe UI", sans-serif;
+          background: #2b2e3a;
+          text-align: center;
+          margin: 0;
+          padding: 0;
         }
 
         h1 {
-            color: #FFF8D4;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
+          color: #FFEAA7;
+          margin-top: 30px;
+          font-size: 2.5rem;
+          letter-spacing: 1px;
         }
 
-
-        .container {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 20px;
+        .layout {
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          gap: 30px;
+          flex-wrap: wrap;
+          margin-top: 20px;
         }
+
 
         .room {
-            position: relative;
-            width: 900px;
-            height: 600px;
-            border: 2px solid;
-            border-radius: 10px;
-            overflow: hidden;
+          position: relative;
+          width: 90%;
+          max-width: 900px;
+          aspect-ratio: 3 / 2;
+          border: 3px solid #444;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 0 20px #0005;
         }
 
         .background {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background-color: black;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: opacity 0.5s ease;
+        }
+
+
+
+        .device {
+          position: absolute;
+          transition: opacity 0.3s ease, transform 0.3s;
         }
 
 
         .lamp {
-            position: absolute;
-            top: 0px;
-            left: 350px;
-            width: 120px;
+          top: 0.8%;
+          left: 38%;
+          width: 13%;
         }
+
 
         .kettle {
-            position: absolute;
-            top: 215px;
-            left: 620px;
-            width: 140px;
+          top: 36%;
+          left: 69%;
+          width: 15%;
         }
+
 
         .fridge {
-            position: absolute;
-            top: 210px;
-            left: 20px;
-            width: 250px;
+          top: 35%;
+          left: 3%;
+          width: 27%;
         }
 
 
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: stretch;
+        .controls {
+          width: 230px;
+          background: #3a3f50;
+          border-radius: 12px;
+          padding: 20px;
+          height: fit-content;
+          box-shadow: 0 0 15px #0005;
         }
 
-        .menu button {
-            font-size: 20px;
-            padding: 15px 20px;
-            background-color: #A3B087;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        .control-title {
+          color: #fff;
+          font-size: 22px;
+          margin-bottom: 15px;
+        }
+
+        button {
+          font-size: 18px;
+          margin: 12px 0;
+          padding: 12px 20px;
+          width: 100%;
+          background: #FFEAA7;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: 0.2s ease;
+        }
+
+        button:hover {
+          background: #ffdb6b;
+          transform: scale(1.04);
+        }
+
+        @media (max-width: 600px) {
+          h1 {
+              font-size: 2rem;
+          }
+
+          .controls {
+              width: 90%;
+              margin-top: 10px;
+          }
+
+          button {
+              font-size: 16px;
+              padding: 10px;
+          }
         }
 
     </style>
+
 </head>
 <body>
 
 <h1>Smart Home Control Panel</h1>
-
-<div class="container">
-
-
+<div class="layout">
     <div class="room">
         <img class="background" src="/static/room.png">
-        <img id="lamp" class="lamp" src="/static/lamp_off.png">
-        <img id="kettle" class="kettle" src="/static/kettle_off.png">
-        <img id="fridge" class="fridge" src="/static/fridge_off.png">
+
+        <img id="lamp" class="lamp device" src="/static/lamp_off.png">
+        <img id="kettle" class="kettle device" src="/static/kettle_off.png">
+        <img id="fridge" class="fridge device" src="/static/fridge_off.png">
     </div>
 
 
-    <div class="menu">
+    <div class="controls">
+        <div class="control-title">Controls</div>
         <button onclick="toggle('light')">Toggle Lamp</button>
         <button onclick="toggle('kettle')">Toggle Kettle</button>
         <button onclick="toggle('fridge')">Toggle Fridge</button>
@@ -130,6 +173,7 @@ function loadState() {
 function toggle(device) {
     if (device === "light") playSound("/static/sound_lamp.mp3");
     if (device === "kettle") playSound("/static/sound_kettle.mp3");
+    if (device === "fridge") playSound("/static/sound_fridge.mp3");
     fetch("/toggle/" + device)
         .then(() => loadState());
 }

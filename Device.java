@@ -5,7 +5,8 @@ public abstract class Device {
         return on;
     }
 
-    public void toggle() {
+    public synchronized void toggle() {
         on = !on;
     }
+
 }

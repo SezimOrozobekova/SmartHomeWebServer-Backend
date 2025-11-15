@@ -1,25 +1,32 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 import java.net.Socket;
 import com.google.gson.Gson;
 
 public class Client implements Runnable {
 
-    private Socket socket;
-    private Thread thread;
-    private SmartHomeState state;
-    private Gson gson = new Gson();
+    private final Socket socket;
+    private final Thread thread;
+    private final SmartHomeState state;
+    private final Gson gson;
 
     public Client(Socket socket, SmartHomeState state) {
         this.socket = socket;
         this.state = state;
-        thread = new Thread(this);
+        this.thread = new Thread(this);
+        this.gson = new Gson();
     }
 
     public void go() {
         thread.start();
     }
 
-    @Override
     public void run() {
         handleRequest();
     }
@@ -36,64 +43,81 @@ public class Client implements Runnable {
 
             String path = firstLine.split(" ")[1];
 
-            if (path.equals("/toggle/light")) {
-                state.light.toggle();
-                sendJson(out, "{\"ok\":true}");
-            } else if (path.equals("/toggle/kettle")) {
-                state.kettle.toggle();
-                sendJson(out, "{\"ok\":true}");
-            } else if (path.equals("/toggle/fridge")) {
-                state.fridge.toggle();
-                sendJson(out, "{\"ok\":true}");
-            }  else if (path.equals("/state")) {
-                sendJson(out, gson.toJson(state));
-            } else if (path.startsWith("/static/")) {
-              File file = new File("." + path);
-              if (!file.exists()) {
-                  send404(out);
-                  return;
-              }
-              String mime = getMimeType(path);
-              sendFile(out, file, mime);
-              return;
-          } else {
-                sendHtmlFile(out, "static/index.html");
+
+            if (path.startsWith("/toggle/")) {
+                handleToggle(path, out);
+                return;
             }
+
+            if (path.equals("/state")) {
+                sendJson(out, gson.toJson(state));
+                return;
+            }
+
+            if (path.startsWith("/static/")) {
+                File file = new File("." + path);
+
+                if (!file.exists()) {
+                    send404(out);
+                    return;
+                }
+
+                sendFile(out, file);
+                return;
+            }
+
+            File index = new File("static/index.html");
+            sendFile(out, index);
 
         } catch (IOException e) {
             System.out.println("Client error: " + e);
         } finally {
-            try { socket.close(); } catch (IOException ignored) {}
+            try {
+                socket.close();
+            } catch (IOException ignored) {}
         }
     }
 
-    private void sendHtmlFile(OutputStream out, String filePath) throws IOException {
-        File file = new File(filePath);
-        String html = new String(java.nio.file.Files.readAllBytes(file.toPath()));
+    private void handleToggle(String path, OutputStream out) throws IOException {
+        switch (path) {
 
-        PrintWriter writer = new PrintWriter(out, true);
-        writer.println("HTTP/1.1 200 OK");
-        writer.println("Content-Type: text/html; charset=UTF-8");
-        writer.println("Content-Length: " + html.length());
-        writer.println();
-        writer.flush();
+            case "/toggle/light":
+                state.light.toggle();
+                break;
 
-        out.write(html.getBytes());
-        out.flush();
+            case "/toggle/kettle":
+                state.kettle.toggle();
+                break;
+
+            case "/toggle/fridge":
+                state.fridge.toggle();
+                break;
+
+            default:
+                send404(out);
+                return;
+        }
+
+        sendJson(out, gson.toJson(Map.of("ok", true)));
     }
 
     private void sendJson(OutputStream out, String json) throws IOException {
+        byte[] bytes = json.getBytes("UTF-8");
+
         PrintWriter writer = new PrintWriter(out, true);
         writer.println("HTTP/1.1 200 OK");
-        writer.println("Content-Type: application/json");
-        writer.println("Content-Length: " + json.length());
+        writer.println("Content-Type: application/json; charset=UTF-8");
+        writer.println("Content-Length: " + bytes.length);
         writer.println();
         writer.flush();
 
-        out.write(json.getBytes());
+        out.write(bytes);
         out.flush();
     }
-    private void sendFile(OutputStream out, File file, String mime) throws IOException {
+
+    private void sendFile(OutputStream out, File file) throws IOException {
+        String mime = getMimeType(file.getName());
+
         PrintWriter writer = new PrintWriter(out, true);
         writer.println("HTTP/1.1 200 OK");
         writer.println("Content-Type: " + mime);
@@ -106,19 +130,22 @@ public class Client implements Runnable {
         fis.close();
     }
 
-    private String getMimeType(String path) {
-        if (path.endsWith(".png")) return "image/png";
-        if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
-        if (path.endsWith(".css")) return "text/css";
-        if (path.endsWith(".js")) return "application/javascript";
-        if (path.endsWith(".mp3")) return "audio/mpeg";
-        return "application/octet-stream";
-    }
-
     private void send404(OutputStream out) {
         PrintWriter writer = new PrintWriter(out, true);
         writer.println("HTTP/1.1 404 Not Found");
+        writer.println("Content-Type: text/plain");
         writer.println();
+        writer.println("404 Not Found");
     }
 
+
+    private String getMimeType(String filename) {
+        if (filename.endsWith(".html")) return "text/html; charset=UTF-8";
+        if (filename.endsWith(".css"))  return "text/css";
+        if (filename.endsWith(".js"))   return "application/javascript";
+        if (filename.endsWith(".png"))  return "image/png";
+        if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) return "image/jpeg";
+        if (filename.endsWith(".mp3"))  return "audio/mpeg";
+        return "application/octet-stream";
+    }
 }

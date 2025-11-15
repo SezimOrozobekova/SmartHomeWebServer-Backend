@@ -1,6 +1,12 @@
 public class SmartHomeState {
 
-    public LightState light = new LightState();
-    public KettleState kettle = new KettleState();
-    public FridgeState fridge = new FridgeState();
+    public LightState light;
+    public KettleState kettle;
+    public FridgeState fridge;
+
+    public SmartHomeState(){
+       light = new LightState();
+       kettle = new KettleState();
+       fridge = new FridgeState();
+    }
 }
