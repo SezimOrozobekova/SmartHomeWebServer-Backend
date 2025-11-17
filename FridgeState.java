@@ -3,26 +3,28 @@ public class FridgeState extends Device {
     private int temperature;
 
     public FridgeState() {
-        this.temperature = FridgeConfig.DEFAULT_TEMP;
+        this.temperature = Config.DEFAULT_TEMP;
     }
 
     public int getTemperature() {
         return temperature;
     }
 
-    public void increaseTemperature() {
-        if (temperature < FridgeConfig.MAX_TEMP) {
+    public synchronized void increaseTemperature() {
+        if (temperature < Config.MAX_TEMP) {
             temperature++;
         }
     }
 
-    public void decreaseTemperature() {
-        if (temperature > FridgeConfig.MIN_TEMP) {
+    public synchronized void decreaseTemperature() {
+        if (temperature > Config.MIN_TEMP) {
             temperature--;
         }
     }
 
-    public void toggle() {
-        on = !on;
+    public static class Config {
+        public static final int MIN_TEMP = 1;
+        public static final int MAX_TEMP = 10;
+        public static final int DEFAULT_TEMP = 5;
     }
 }

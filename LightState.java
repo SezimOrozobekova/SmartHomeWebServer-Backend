@@ -1,4 +1,5 @@
 public class LightState extends Device {
+
     private String color;
 
     public LightState() {
@@ -9,7 +10,7 @@ public class LightState extends Device {
         return color;
     }
 
-    public void setColor(String newColor) {
+    public synchronized void setColor(String newColor) {
 
         String value = newColor.toLowerCase();
 
@@ -24,4 +25,12 @@ public class LightState extends Device {
         this.color = value;
     }
 
+    public static class Colors {
+        public static final String WHITE = "white";
+        public static final String RED   = "red";
+        public static final String GREEN = "green";
+        public static final String BLUE  = "blue";
+
+        private Colors() {}
+    }
 }
